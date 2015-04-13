@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="10" height="5" tilewidth="20" tileheight="20">
+ <tileset firstgid="1" name="Crater" tilewidth="20" tileheight="20" spacing="1" margin="1">
+  <image source="Crater.png" width="64" height="106"/>
+ </tileset>
+ <tileset firstgid="16" name="Lava" tilewidth="20" tileheight="20" spacing="1" margin="1">
+  <image source="Lava.png" width="64" height="106"/>
+ </tileset>
+ <tileset firstgid="31" name="Crater2Lava" tilewidth="20" tileheight="20" spacing="1" margin="1">
+  <image source="Crater2Lava.png" width="64" height="106"/>
+ </tileset>
+ <tileset firstgid="46" name="Mountains" tilewidth="20" tileheight="20" spacing="1" margin="1">
+  <image source="Mountains.png" width="64" height="106"/>
+ </tileset>
+ <tileset firstgid="61" name="Mountain2Crater" tilewidth="20" tileheight="20" spacing="1" margin="1">
+  <image source="Mountain2Crater.png" width="64" height="106"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="10" height="5">
+  <data encoding="base64" compression="zlib">
+   eJxjZWBgYIVidyC2B2IjLFgeiBWAWBGq1gmLGgEgVgJiZSBWwaIOJC8IxJJArArEakCsDsReQOyKpE4YiEWgmBUJo5sliaQOAOyyBwM=
+  </data>
+ </layer>
+</map>
