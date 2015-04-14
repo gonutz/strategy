@@ -1,10 +1,12 @@
 package game
 
-func NewGame(imageLoader ImageLoader, camera SceneCamera) *Game {
+import "github.com/veandco/go-sdl2/sdl"
+
+func NewGame(imageLoader ImageLoader, cam ScreenCamera) *Game {
 	g := &Game{
 		running: true,
 	}
-	g.state = NewPlayState(g, imageLoader, camera)
+	g.state = NewPlayState(g, imageLoader, cam)
 	return g
 }
 
@@ -43,4 +45,28 @@ func (g *Game) Draw() {
 
 func (g *Game) ChangeStateTo(state GameState) {
 	g.nextState = state
+}
+
+func (g *Game) KeyDown(key sdl.Keycode) {
+	if g.state != nil {
+		g.state.KeyDown(key)
+	}
+}
+
+func (g *Game) ScrollUp(x, y int) {
+	if g.state != nil {
+		g.state.ScrollUp(x, y)
+	}
+}
+
+func (g *Game) ScrollDown(x, y int) {
+	if g.state != nil {
+		g.state.ScrollDown(x, y)
+	}
+}
+
+func (g *Game) MouseMovedTo(x, y int) {
+	if g.state != nil {
+		g.state.MouseMovedTo(x, y)
+	}
 }

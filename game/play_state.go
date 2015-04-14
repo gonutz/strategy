@@ -2,35 +2,91 @@ package game
 
 import (
 	"github.com/mewmew/tmx"
+	"github.com/veandco/go-sdl2/sdl"
 	"os"
 	"path/filepath"
 )
 
-func NewPlayState(context GameStateChanger, imageLoader ImageLoader, camera SceneCamera) *PlayState {
-	state := &PlayState{context: context, camera: camera}
+func NewPlayState(context GameStateChanger, imageLoader ImageLoader, cam ScreenCamera) *PlayState {
+	state := &PlayState{context: context, camera: newSceneCamera(cam)}
 	state.loadMap(imageLoader, "crater_world.tmx")
 	return state
 }
 
 type PlayState struct {
-	context GameStateChanger
-	camera  SceneCamera
-	tileMap *tileMap
+	context        GameStateChanger
+	camera         SceneCamera
+	tileMap        *tileMap
+	mouseX, mouseY int
 }
 
 type GameStateChanger interface {
 	ChangeStateTo(state GameState)
 }
 
-func (s *PlayState) Update() {}
+func (s *PlayState) Update() {
+	x, y, w, h := s.camera.GetVisibleArea()
+	xMargin := int(float32(w)*0.01 + 0.5)
+	if xMargin == 0 {
+		xMargin = 1
+	}
+	yMargin := int(float32(h)*0.01 + 0.5)
+	if yMargin == 0 {
+		yMargin = 1
+	}
+	worldX, worldY := s.camera.ScreenToWorld(s.mouseX, s.mouseY)
+	dx, dy := 0, 0
+	if worldX < x+xMargin {
+		dx = -1
+	}
+	if worldX > x+w-xMargin {
+		dx = 1
+	}
+	if worldY < y+yMargin {
+		dy = -1
+	}
+	if worldY > y+h-yMargin {
+		dy = 1
+	}
+	s.camera.Move(dx*xMargin, dy*xMargin)
+}
 
 func (s *PlayState) Draw() {
-	w, h := s.tileMap.size()
-	s.tileMap.draw(0, 0, w, h)
+	s.tileMap.draw(s.camera.GetVisibleArea())
+}
+
+func (s *PlayState) KeyDown(key sdl.Keycode) {
+	switch key {
+	case sdl.K_LEFT:
+		s.camera.Move(-10, 0)
+	case sdl.K_RIGHT:
+		s.camera.Move(10, 0)
+	case sdl.K_DOWN:
+		s.camera.Move(0, 10)
+	case sdl.K_UP:
+		s.camera.Move(0, -10)
+	}
+}
+
+func (s *PlayState) ScrollUp(x, y int) {
+	//x, y = s.camera.ScreenToWorld(x, y)
+	s.camera.ZoomIn()
+	//s.camera.SetFocus(x, y)
+}
+
+func (s *PlayState) ScrollDown(x, y int) {
+	//x, y = s.camera.ScreenToWorld(x, y)
+	s.camera.ZoomOut()
+	//s.camera.SetFocus(x, y)
+}
+
+func (s *PlayState) MouseMovedTo(x, y int) {
+	s.mouseX, s.mouseY = x, y
 }
 
 func (s *PlayState) loadMap(imageLoader ImageLoader, ID string) {
-	resourcePath := filepath.Join(os.Getenv("GOPATH"), "src", "github.com", "gonutz", "strategy", "rsc")
+	resourcePath := filepath.Join(
+		os.Getenv("GOPATH"), "src", "github.com", "gonutz", "strategy", "rsc")
 	mapPath := filepath.Join(resourcePath, ID)
 	m, err := tmx.Open(mapPath)
 	if err != nil {
@@ -61,9 +117,15 @@ func (s *PlayState) loadMap(imageLoader ImageLoader, ID string) {
 	ground := m.Layers[0] // TODO look up the Layer with name "ground"
 	for y := 0; y < m.Height; y++ {
 		for x := 0; x < m.Width; x++ {
-			s.tileMap.tileAt(x, y).image = lookUpTileImage(tileImages, ground.GetGID(x, y))
+			gid := ground.GetGID(x, y)
+			s.tileMap.tileAt(x, y).image = lookUpTileImage(tileImages, gid)
 		}
 	}
+
+	mapW, mapH := s.tileMap.size()
+	worldW, worldH := mapW*s.tileMap.tileW, mapH*s.tileMap.tileH
+	s.camera.SetWorldSize(worldW, worldH)
+	s.camera.SetFocus(worldW/2, worldH/2)
 }
 
 func lookUpTileImage(images []*tileImage, gid int) Image {
@@ -86,14 +148,37 @@ func (m *tileMap) size() (int, int) {
 }
 
 func (m *tileMap) draw(left, top, width, height int) {
-	for x := left; x < left+width; x++ {
-		for y := top; y < top+height; y++ {
+	tileX, tileY := m.clampTileCoordinates(left/m.tileW, top/m.tileH)
+	rightTile, bottomTile := m.clampTileCoordinates(
+		(left+width-1)/m.tileW,
+		(top+height-1)/m.tileH,
+	)
+
+	for x := tileX; x <= rightTile; x++ {
+		for y := tileY; y <= bottomTile; y++ {
 			m.tileAt(x, y).image.Draw(
 				rect{0, 0, m.tileW, m.tileH},
-				rect{x * m.tileW, y * m.tileH, m.tileW, m.tileH},
+				rect{x*m.tileW - left, y*m.tileH - top, m.tileW, m.tileH},
 			)
 		}
 	}
+}
+
+func (m *tileMap) clampTileCoordinates(x, y int) (int, int) {
+	if x < 0 {
+		x = 0
+	}
+	if y < 0 {
+		y = 0
+	}
+	w, h := m.size()
+	if x >= w {
+		x = w - 1
+	}
+	if y >= h {
+		y = h - 1
+	}
+	return x, y
 }
 
 func (m *tileMap) tileAt(x, y int) *tile {
@@ -104,7 +189,8 @@ type tile struct {
 	image Image
 }
 
-func newTileImage(imageLoader ImageLoader, path string, tileW, tileH, margin, spacing, firstID int) (*tileImage, error) {
+func newTileImage(imageLoader ImageLoader, path string,
+	tileW, tileH, margin, spacing, firstID int) (*tileImage, error) {
 	img, err := imageLoader.LoadFile(path)
 	if err != nil {
 		return nil, err
