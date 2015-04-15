@@ -29,10 +29,10 @@ type SceneCamera interface {
 	ScreenToWorld(x, y int) (int, int)
 
 	// ZoomIn maginifies the currently visible rectangle.
-	ZoomIn()
+	ZoomIn(mouseX, mouseY int)
 
 	// ZoomOut minifies the currently visible rectangle.
-	ZoomOut()
+	ZoomOut(mouseX, mouseY int)
 }
 
 func newSceneCamera(cam ScreenCamera) SceneCamera {
@@ -98,10 +98,18 @@ func (c *sceneCamera) ScreenToWorld(x, y int) (int, int) {
 	return x + offsetX, y + offsetY
 }
 
-func (c *sceneCamera) ZoomIn() {
-	c.screenCamera.ZoomIn()
+func (c *sceneCamera) ZoomIn(mouseX, mouseY int) {
+	c.zoomAt(mouseX, mouseY, c.screenCamera.ZoomIn)
 }
 
-func (c *sceneCamera) ZoomOut() {
-	c.screenCamera.ZoomOut()
+func (c *sceneCamera) ZoomOut(mouseX, mouseY int) {
+	c.zoomAt(mouseX, mouseY, c.screenCamera.ZoomOut)
+}
+
+func (c *sceneCamera) zoomAt(mouseX, mouseY int, zoomFunc func()) {
+	x, y := c.ScreenToWorld(mouseX, mouseY)
+	zoomFunc()
+	zoomedX, zoomedY := c.ScreenToWorld(mouseX, mouseY)
+	offsetX, offsetY := x-zoomedX, y-zoomedY
+	c.Move(offsetX, offsetY)
 }

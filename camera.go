@@ -88,6 +88,7 @@ func (c *camera) ScreenSize() (int, int) {
 }
 
 func (c *camera) ScreenToScene(x, y int) (int, int) {
+	c.recalculate()
 	scale := float32(c.displayH) / float32(c.screenH)
 	return int(float32(x)*scale + 0.5), int(float32(y)*scale + 0.5)
 }

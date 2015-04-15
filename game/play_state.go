@@ -26,14 +26,7 @@ type GameStateChanger interface {
 
 func (s *PlayState) Update() {
 	x, y, w, h := s.camera.GetVisibleArea()
-	xMargin := int(float32(w)*0.01 + 0.5)
-	if xMargin == 0 {
-		xMargin = 1
-	}
-	yMargin := int(float32(h)*0.01 + 0.5)
-	if yMargin == 0 {
-		yMargin = 1
-	}
+	xMargin, yMargin := s.getMoveDistance()
 	worldX, worldY := s.camera.ScreenToWorld(s.mouseX, s.mouseY)
 	dx, dy := 0, 0
 	if worldX < x+xMargin {
@@ -51,33 +44,45 @@ func (s *PlayState) Update() {
 	s.camera.Move(dx*xMargin, dy*xMargin)
 }
 
+func (s *PlayState) getMoveDistance() (dx, dy int) {
+	_, _, w, h := s.camera.GetVisibleArea()
+	dx = int(float32(w)*0.01 + 0.5)
+	if dx == 0 {
+		dx = 1
+	}
+	dy = int(float32(h)*0.01 + 0.5)
+	if dy == 0 {
+		dy = 1
+	}
+	return
+}
+
 func (s *PlayState) Draw() {
 	s.tileMap.draw(s.camera.GetVisibleArea())
 }
 
 func (s *PlayState) KeyDown(key sdl.Keycode) {
+	dx, dy := s.getMoveDistance()
+	dx *= 3
+	dy *= 3
 	switch key {
 	case sdl.K_LEFT:
-		s.camera.Move(-10, 0)
+		s.camera.Move(-dx, 0)
 	case sdl.K_RIGHT:
-		s.camera.Move(10, 0)
+		s.camera.Move(dx, 0)
 	case sdl.K_DOWN:
-		s.camera.Move(0, 10)
+		s.camera.Move(0, dy)
 	case sdl.K_UP:
-		s.camera.Move(0, -10)
+		s.camera.Move(0, -dy)
 	}
 }
 
 func (s *PlayState) ScrollUp(x, y int) {
-	//x, y = s.camera.ScreenToWorld(x, y)
-	s.camera.ZoomIn()
-	//s.camera.SetFocus(x, y)
+	s.camera.ZoomIn(x, y)
 }
 
 func (s *PlayState) ScrollDown(x, y int) {
-	//x, y = s.camera.ScreenToWorld(x, y)
-	s.camera.ZoomOut()
-	//s.camera.SetFocus(x, y)
+	s.camera.ZoomOut(x, y)
 }
 
 func (s *PlayState) MouseMovedTo(x, y int) {
