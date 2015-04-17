@@ -1,15 +1,26 @@
 package game
 
 import (
+	"github.com/gonutz/strategy/game/buildings"
+	"github.com/gonutz/strategy/images"
 	"github.com/mewmew/tmx"
 	"github.com/veandco/go-sdl2/sdl"
 	"os"
 	"path/filepath"
 )
 
-func NewPlayState(context GameStateChanger, imageLoader ImageLoader, cam ScreenCamera) *PlayState {
-	state := &PlayState{context: context, camera: newSceneCamera(cam)}
+func NewPlayState(context GameStateChanger, imageLoader images.ImageLoader, cam ScreenCamera) *PlayState {
+	artillery, err := buildings.NewArtillery(imageLoader, 100, 200)
+	if err != nil {
+		sdl.ShowSimpleMessageBox(sdl.MESSAGEBOX_ERROR, "Error", err.Error(), nil)
+	}
+	state := &PlayState{
+		context:   context,
+		camera:    newSceneCamera(cam),
+		artillery: artillery,
+	}
 	state.loadMap(imageLoader, "crater_world.tmx")
+	state.objects = []updater{artillery}
 	return state
 }
 
@@ -18,6 +29,12 @@ type PlayState struct {
 	camera         SceneCamera
 	tileMap        *tileMap
 	mouseX, mouseY int
+	artillery      *buildings.Artillery
+	objects        []updater
+}
+
+type updater interface {
+	Update()
 }
 
 type GameStateChanger interface {
@@ -25,6 +42,10 @@ type GameStateChanger interface {
 }
 
 func (s *PlayState) Update() {
+	for _, o := range s.objects {
+		o.Update()
+	}
+
 	x, y, w, h := s.camera.GetVisibleArea()
 	xMargin, yMargin := s.getMoveDistance()
 	worldX, worldY := s.camera.ScreenToWorld(s.mouseX, s.mouseY)
@@ -59,6 +80,7 @@ func (s *PlayState) getMoveDistance() (dx, dy int) {
 
 func (s *PlayState) Draw() {
 	s.tileMap.draw(s.camera.GetVisibleArea())
+	s.artillery.Draw(s.camera)
 }
 
 func (s *PlayState) KeyDown(key sdl.Keycode) {
@@ -74,6 +96,14 @@ func (s *PlayState) KeyDown(key sdl.Keycode) {
 		s.camera.Move(0, dy)
 	case sdl.K_UP:
 		s.camera.Move(0, -dy)
+	case sdl.K_MINUS:
+		s.camera.ZoomOut(0, 0) // TODO zoom center
+	case sdl.K_PLUS:
+		s.camera.ZoomIn(0, 0) // TODO zoom center
+	case sdl.K_n:
+		s.artillery.RotateBy(45)
+	case sdl.K_m:
+		s.artillery.RotateBy(-45)
 	}
 }
 
@@ -89,7 +119,7 @@ func (s *PlayState) MouseMovedTo(x, y int) {
 	s.mouseX, s.mouseY = x, y
 }
 
-func (s *PlayState) loadMap(imageLoader ImageLoader, ID string) {
+func (s *PlayState) loadMap(imageLoader images.ImageLoader, ID string) {
 	resourcePath := filepath.Join(
 		os.Getenv("GOPATH"), "src", "github.com", "gonutz", "strategy", "rsc")
 	mapPath := filepath.Join(resourcePath, ID)
@@ -133,7 +163,7 @@ func (s *PlayState) loadMap(imageLoader ImageLoader, ID string) {
 	s.camera.SetFocus(worldW/2, worldH/2)
 }
 
-func lookUpTileImage(images []*tileImage, gid int) Image {
+func lookUpTileImage(images []*tileImage, gid int) images.Image {
 	for _, tileImage := range images {
 		if img := tileImage.imageWithID(gid); img != nil {
 			return img
@@ -162,8 +192,8 @@ func (m *tileMap) draw(left, top, width, height int) {
 	for x := tileX; x <= rightTile; x++ {
 		for y := tileY; y <= bottomTile; y++ {
 			m.tileAt(x, y).image.Draw(
-				rect{0, 0, m.tileW, m.tileH},
-				rect{x*m.tileW - left, y*m.tileH - top, m.tileW, m.tileH},
+				images.Rect{0, 0, m.tileW, m.tileH},
+				images.Rect{x*m.tileW - left, y*m.tileH - top, m.tileW, m.tileH},
 			)
 		}
 	}
@@ -191,10 +221,10 @@ func (m *tileMap) tileAt(x, y int) *tile {
 }
 
 type tile struct {
-	image Image
+	image images.Image
 }
 
-func newTileImage(imageLoader ImageLoader, path string,
+func newTileImage(imageLoader images.ImageLoader, path string,
 	tileW, tileH, margin, spacing, firstID int) (*tileImage, error) {
 	img, err := imageLoader.LoadFile(path)
 	if err != nil {
@@ -209,7 +239,7 @@ func newTileImage(imageLoader ImageLoader, path string,
 }
 
 type tileImage struct {
-	image        Image
+	image        images.Image
 	tileW, tileH int
 	margin       int
 	spacing      int
@@ -219,7 +249,7 @@ type tileImage struct {
 	tileCountX, tileCountY int
 }
 
-func (i *tileImage) imageWithID(id int) Image {
+func (i *tileImage) imageWithID(id int) images.Image {
 	if id < i.firstID || id > i.lastID {
 		return nil
 	}
@@ -227,26 +257,5 @@ func (i *tileImage) imageWithID(id int) Image {
 	x, y := index%i.tileCountX, index/i.tileCountX
 	imgX := i.margin + x*(i.tileW+i.spacing)
 	imgY := i.margin + y*(i.tileH+i.spacing)
-	return &imageSection{i.image, imgX, imgY, i.tileW, i.tileH}
-}
-
-type imageSection struct {
-	Image
-	x, y, w, h int
-}
-
-func (i *imageSection) Size() (int, int) { return i.w, i.h }
-
-func (i *imageSection) Draw(src, dest Rectangle) {
-	i.Image.Draw(&offsetRectangle{src, i.x, i.y}, dest)
-}
-
-type offsetRectangle struct {
-	Rectangle
-	offsetX, offsetY int
-}
-
-func (r *offsetRectangle) TopLeft() (int, int) {
-	x, y := r.Rectangle.TopLeft()
-	return x + r.offsetX, y + r.offsetY
+	return &images.ImageSection{i.image, imgX, imgY, i.tileW, i.tileH}
 }

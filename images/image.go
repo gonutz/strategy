@@ -1,8 +1,4 @@
-package game
-
-type ImageLoader interface {
-	LoadFile(path string) (Image, error)
-}
+package images
 
 type Image interface {
 	Size() (w, h int)

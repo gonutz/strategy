@@ -1,22 +1,22 @@
 package main
 
 import (
-	"github.com/gonutz/strategy/game"
+	"github.com/gonutz/strategy/images"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_image"
 )
 
 func newImageLoader(renderer *sdl.Renderer) *imageLoader {
-	return &imageLoader{renderer, make(map[string]game.Image), nil}
+	return &imageLoader{renderer, make(map[string]images.Image), nil}
 }
 
 type imageLoader struct {
 	renderer *sdl.Renderer
-	images   map[string]game.Image
+	images   map[string]images.Image
 	textures []*sdl.Texture
 }
 
-func (l *imageLoader) LoadFile(path string) (game.Image, error) {
+func (l *imageLoader) LoadFile(path string) (images.Image, error) {
 	if img, ok := l.images[path]; ok {
 		return img, nil
 	}
@@ -48,7 +48,7 @@ type textureImage struct {
 	texture  *sdl.Texture
 }
 
-func (i *textureImage) Draw(src, dest game.Rectangle) {
+func (i *textureImage) Draw(src, dest images.Rectangle) {
 	sx, sy := src.TopLeft()
 	sw, sh := src.Size()
 	dx, dy := dest.TopLeft()

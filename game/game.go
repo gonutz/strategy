@@ -1,8 +1,11 @@
 package game
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/gonutz/strategy/images"
+	"github.com/veandco/go-sdl2/sdl"
+)
 
-func NewGame(imageLoader ImageLoader, cam ScreenCamera) *Game {
+func NewGame(imageLoader images.ImageLoader, cam ScreenCamera) *Game {
 	g := &Game{
 		running: true,
 	}

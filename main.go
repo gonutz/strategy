@@ -35,8 +35,8 @@ func main() {
 	window.SetTitle("Strategy Game")
 	renderer.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 	// TODO which one or should the user be able to choose one?
-	//sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "nearest")
-	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "linear")
+	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "nearest")
+	//sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "linear")
 
 	camera := newCamera(renderer)
 	camera.setScreenSize(window.GetSize())
