@@ -17,9 +17,14 @@ func NewArtillery(loader images.ImageLoader, x, y int) (*Artillery, error) {
 		return nil, err
 	}
 	return &Artillery{
-		tiles: images.NewTiledImageWithTileCounts(tileImage, 6, 3),
-		x:     x,
-		y:     y,
+		tiles: images.NewTiledImageWithTileCounts(tileImage, images.TileImageDescription{
+			TilesInX: 6,
+			TilesInY: 3,
+			Margin:   1,
+			Spacing:  2,
+		}),
+		x: x,
+		y: y,
 	}, nil
 }
 

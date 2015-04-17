@@ -5,25 +5,28 @@ type TiledImage struct {
 	tiles []Image
 }
 
-func NewTiledImageWithTileCounts(image Image, tilesInX, tilesInY int) *TiledImage {
-	w, h := image.Size()
-	tileW := w / tilesInX
-	tileH := h / tilesInY
-	img := &TiledImage{image, nil}
-	img.computeTiles(tileW, tileH)
-	return img
+type TileImageDescription struct {
+	TilesInX int
+	TilesInY int
+	Margin   int
+	Spacing  int
 }
 
-func (img *TiledImage) computeTiles(tileW, tileH int) {
-	w, h := img.Image.Size()
-	tilesInX, tilesInY := w/tileW, h/tileH
-	tileCount := tilesInX * tilesInY
-	img.tiles = make([]Image, tileCount)
+func NewTiledImageWithTileCounts(image Image, desc TileImageDescription) *TiledImage {
+	tileCount := desc.TilesInX * desc.TilesInY
+	img := &TiledImage{image, make([]Image, tileCount)}
+	w, h := image.Size()
+	tileW := (w - 2*desc.Margin - (desc.TilesInX-1)*desc.Spacing) / desc.TilesInX
+	tileH := (h - 2*desc.Margin - (desc.TilesInY-1)*desc.Spacing) / desc.TilesInY
+
 	for i := 0; i < tileCount; i++ {
-		tileX, tileY := i%tilesInX, i/tilesInX
-		x, y := tileX*tileW, tileY*tileH
-		img.tiles[i] = &ImageSection{img.Image, x + 1, y + 1, tileW - 2, tileH - 2}
+		tileX, tileY := i%desc.TilesInX, i/desc.TilesInX
+		x := desc.Margin + tileX*(tileW+desc.Spacing)
+		y := desc.Margin + tileY*(tileH+desc.Spacing)
+		img.tiles[i] = &ImageSection{img.Image, x, y, tileW, tileH}
 	}
+
+	return img
 }
 
 func (img *TiledImage) Tile(i int) Image {
