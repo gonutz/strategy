@@ -63,14 +63,27 @@ func (c *camera) recalculate() {
 }
 
 func (c *camera) recreateRenderTarget() {
-	// TODO is SDL_PIXELFORMAT_UNKNOWN OK here?
+	// TODO have the user be able to state whether they want
+	// - automatic mode, depending on the screen size
+	// - always linear interpolation
+	// - always nearest neighbor
+	// TODO also find the best automatic setting, (> twice the size or the size
+	// or 1.5 times the size?)
+	if c.screenW > c.displayW*2 {
+		sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "nearest")
+	} else {
+		sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "linear")
+	}
+
 	texture, err := c.renderer.CreateTexture(
+		// TODO is SDL_PIXELFORMAT_UNKNOWN OK here?
 		sdl.PIXELFORMAT_UNKNOWN,
 		sdl.TEXTUREACCESS_TARGET,
 		c.displayW,
 		c.displayH,
 	)
 	if err != nil {
+		// TODO what to do in this case?
 		fmt.Println("creating back buffer failed")
 		return
 	}

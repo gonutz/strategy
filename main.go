@@ -17,7 +17,7 @@ func main() {
 	}
 	defer sdl.Quit()
 
-	w, h := 640, 480
+	w, h := 800, 600
 	flags := uint32(0)
 	flags = sdl.WINDOW_FULLSCREEN // TODO debug code: use this to toggle fullscreen
 	if flags == sdl.WINDOW_FULLSCREEN {
@@ -34,9 +34,6 @@ func main() {
 	defer renderer.Destroy()
 	window.SetTitle("Strategy Game")
 	renderer.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
-	// TODO which one or should the user be able to choose one?
-	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "nearest")
-	//sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "linear")
 
 	camera := newCamera(renderer)
 	camera.setScreenSize(window.GetSize())

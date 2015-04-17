@@ -10,7 +10,7 @@ import (
 )
 
 func NewPlayState(context GameStateChanger, imageLoader images.ImageLoader, cam ScreenCamera) *PlayState {
-	artillery, err := buildings.NewArtillery(imageLoader, 100, 200)
+	artillery, err := buildings.NewArtillery(imageLoader, 1350, 1400)
 	if err != nil {
 		sdl.ShowSimpleMessageBox(sdl.MESSAGEBOX_ERROR, "Error", err.Error(), nil)
 	}
