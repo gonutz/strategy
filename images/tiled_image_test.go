@@ -90,15 +90,15 @@ func newSpyImage(w, h int) *spyImage {
 
 type spyImage struct {
 	w, h     int
-	drawSrc  Rectangle
-	drawDest Rectangle
+	drawSrc  Rect
+	drawDest Rect
 }
 
 func (i *spyImage) Size() (w, h int) {
 	return i.w, i.h
 }
 
-func (i *spyImage) Draw(src, dest Rectangle) {
+func (i *spyImage) Draw(src, dest Rect) {
 	i.drawSrc = src
 	i.drawDest = dest
 }

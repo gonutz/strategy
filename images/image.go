@@ -14,5 +14,5 @@ type Image interface {
 	// The parameters src and dest must not be nil.
 	// The source parameter should not lie outside the Image's boundaries, the
 	// behavior is otherwise undefined.
-	Draw(src, dest Rectangle)
+	Draw(src, dest Rect)
 }

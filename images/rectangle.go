@@ -1,10 +1,5 @@
 package images
 
-type Rectangle interface {
-	TopLeft() (x, y int)
-	Size() (w, h int)
-}
-
 type Rect struct {
 	X, Y, W, H int
 }

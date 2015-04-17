@@ -48,15 +48,11 @@ type textureImage struct {
 	texture  *sdl.Texture
 }
 
-func (i *textureImage) Draw(src, dest images.Rectangle) {
-	sx, sy := src.TopLeft()
-	sw, sh := src.Size()
-	dx, dy := dest.TopLeft()
-	dw, dh := dest.Size()
+func (i *textureImage) Draw(src, dest images.Rect) {
 	i.renderer.Copy(
 		i.texture,
-		&sdl.Rect{int32(sx), int32(sy), int32(sw), int32(sh)},
-		&sdl.Rect{int32(dx), int32(dy), int32(dw), int32(dh)},
+		&sdl.Rect{int32(src.X), int32(src.Y), int32(src.W), int32(src.H)},
+		&sdl.Rect{int32(dest.X), int32(dest.Y), int32(dest.W), int32(dest.H)},
 	)
 }
 
