@@ -12,16 +12,16 @@ type Artillery struct {
 }
 
 func NewArtillery(loader images.ImageLoader, x, y int) (*Artillery, error) {
-	tileImage, err := loader.LoadFile("C:/Users/Lars/Documents/gocode/src/github.com/gonutz/strategy/rsc/artillery.png")
+	tileImage, err := loader.LoadImage("artillery.png")
 	if err != nil {
 		return nil, err
 	}
 	return &Artillery{
-		tiles: images.NewTiledImageWithTileCounts(tileImage, images.TileImageDescription{
+		tiles: images.NewTiledImage(tileImage, images.TileImageDescription{
 			TilesInX: 6,
 			TilesInY: 3,
 			Margin:   1,
-			Spacing:  2,
+			Spacing:  1,
 		}),
 		x: x,
 		y: y,

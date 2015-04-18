@@ -1,5 +1,5 @@
 package images
 
 type ImageLoader interface {
-	LoadFile(path string) (Image, error)
+	LoadImage(ID string) (Image, error)
 }

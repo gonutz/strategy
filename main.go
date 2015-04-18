@@ -17,9 +17,9 @@ func main() {
 	}
 	defer sdl.Quit()
 
-	w, h := 800, 600
+	w, h := 1400, 800
 	flags := uint32(0)
-	flags = sdl.WINDOW_FULLSCREEN // TODO debug code: use this to toggle fullscreen
+	//flags = sdl.WINDOW_FULLSCREEN // TODO debug code: use this to toggle fullscreen
 	if flags == sdl.WINDOW_FULLSCREEN {
 		w, h = screenResolution()
 	} else {

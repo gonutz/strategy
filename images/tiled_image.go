@@ -12,7 +12,7 @@ type TileImageDescription struct {
 	Spacing  int
 }
 
-func NewTiledImageWithTileCounts(image Image, desc TileImageDescription) *TiledImage {
+func NewTiledImage(image Image, desc TileImageDescription) *TiledImage {
 	tileCount := desc.TilesInX * desc.TilesInY
 	img := &TiledImage{image, make([]Image, tileCount)}
 	w, h := image.Size()

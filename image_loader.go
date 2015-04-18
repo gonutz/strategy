@@ -4,6 +4,8 @@ import (
 	"github.com/gonutz/strategy/images"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/sdl_image"
+	"os"
+	"path/filepath"
 )
 
 func newImageLoader(renderer *sdl.Renderer) *imageLoader {
@@ -16,7 +18,12 @@ type imageLoader struct {
 	textures []*sdl.Texture
 }
 
-func (l *imageLoader) LoadFile(path string) (images.Image, error) {
+func (l *imageLoader) LoadImage(ID string) (images.Image, error) {
+	rscPath := filepath.Join(os.Getenv("GOPATH"), "src", "github.com", "gonutz", "strategy", "rsc")
+	return l.loadFile(filepath.Join(rscPath, ID))
+}
+
+func (l *imageLoader) loadFile(path string) (images.Image, error) {
 	if img, ok := l.images[path]; ok {
 		return img, nil
 	}

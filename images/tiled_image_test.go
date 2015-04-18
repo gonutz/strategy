@@ -4,7 +4,7 @@ import "testing"
 
 func TestTilesAreEquallySizedImageSections_IndexedTopToBottom_LeftToRight(t *testing.T) {
 	spy := newSpyImage(20, 60)
-	tiled := NewTiledImageWithTileCounts(spy, TileImageDescription{
+	tiled := NewTiledImage(spy, TileImageDescription{
 		TilesInX: 2,
 		TilesInY: 3,
 		Margin:   0,
@@ -25,7 +25,7 @@ func TestTilesAreEquallySizedImageSections_IndexedTopToBottom_LeftToRight(t *tes
 
 func TestTileMarginIsBorderAroundWholeTileImage(t *testing.T) {
 	spy := newSpyImage(24, 64)
-	tiled := NewTiledImageWithTileCounts(spy, TileImageDescription{
+	tiled := NewTiledImage(spy, TileImageDescription{
 		TilesInX: 2,
 		TilesInY: 3,
 		Margin:   2,
@@ -42,7 +42,7 @@ func TestTileMarginIsBorderAroundWholeTileImage(t *testing.T) {
 
 func TestTileSpacingIsThePixelCountBetweenAdjacentTiles(t *testing.T) {
 	spy := newSpyImage(23, 66)
-	tiled := NewTiledImageWithTileCounts(spy, TileImageDescription{
+	tiled := NewTiledImage(spy, TileImageDescription{
 		TilesInX: 2,
 		TilesInY: 3,
 		Margin:   0,
@@ -59,7 +59,7 @@ func TestTileSpacingIsThePixelCountBetweenAdjacentTiles(t *testing.T) {
 
 func TestTilesCanHaveMarginAndSpacing(t *testing.T) {
 	spy := newSpyImage(25, 68)
-	tiled := NewTiledImageWithTileCounts(spy, TileImageDescription{
+	tiled := NewTiledImage(spy, TileImageDescription{
 		TilesInX: 2,
 		TilesInY: 3,
 		Margin:   1,

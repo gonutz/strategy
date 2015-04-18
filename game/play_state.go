@@ -20,7 +20,12 @@ func NewPlayState(context GameStateChanger, imageLoader images.ImageLoader, cam 
 		artillery: artillery,
 	}
 	state.loadMap(imageLoader, "crater_world.tmx")
-	state.objects = []updater{artillery}
+	state.buildAnimation, _ = buildings.NewBuildAnimation(imageLoader, 1500, 1450)
+	state.base, err = buildings.NewBase(imageLoader, 1600, 1500)
+	if err != nil {
+		sdl.ShowSimpleMessageBox(sdl.MESSAGEBOX_ERROR, "Error", err.Error(), nil)
+	}
+	state.objects = []updater{artillery, state.buildAnimation}
 	return state
 }
 
@@ -30,6 +35,8 @@ type PlayState struct {
 	tileMap        *tileMap
 	mouseX, mouseY int
 	artillery      *buildings.Artillery
+	buildAnimation *buildings.BuildAnimation
+	base           *buildings.Base
 	objects        []updater
 }
 
@@ -81,6 +88,8 @@ func (s *PlayState) getMoveDistance() (dx, dy int) {
 func (s *PlayState) Draw() {
 	s.tileMap.draw(s.camera.GetVisibleArea())
 	s.artillery.Draw(s.camera)
+	s.buildAnimation.Draw(s.camera)
+	s.base.Draw(s.camera)
 }
 
 func (s *PlayState) KeyDown(key sdl.Keycode) {
@@ -139,7 +148,7 @@ func (s *PlayState) loadMap(imageLoader images.ImageLoader, ID string) {
 	for _, tileSet := range m.Tilesets {
 		img, err := newTileImage(
 			imageLoader,
-			filepath.Join(resourcePath, tileSet.Image.Source),
+			tileSet.Image.Source,
 			tileSet.TileWidth, tileSet.TileHeight,
 			tileSet.Margin, tileSet.Spacing,
 			tileSet.FirstGID)
@@ -224,9 +233,9 @@ type tile struct {
 	image images.Image
 }
 
-func newTileImage(imageLoader images.ImageLoader, path string,
+func newTileImage(imageLoader images.ImageLoader, ID string,
 	tileW, tileH, margin, spacing, firstID int) (*tileImage, error) {
-	img, err := imageLoader.LoadFile(path)
+	img, err := imageLoader.LoadImage(ID)
 	if err != nil {
 		return nil, err
 	}
